@@ -7,49 +7,61 @@ const pool = new Pool({
     port: 5432,
 });
 
-const table = 'tdltask';
+const table = 'tdl_task';
 
 const add = (req, resp) => {
-    console.log("ADD");
-    console.log(req.query);
-    const {content, isdone} = req.query;
-    pool.query('INSERT INTO '+table+'(content, isdone) VALUES ($1, $2)', [content, isdone], (err, result) => {
-        resp.header("Access-Control-Allow-Origin", "*");
-        if (err)
-            resp.status(200).json({"status": "FAILURE"});
-        else
-        {
-            resp.status(201).json({"status": "SUCCESS"});
-            console.log("Success");
-        }
-    })
-};
-const taskAll = (req, resp) => {
-    console.log("TASKALL");
     resp.header("Access-Control-Allow-Origin", "*");
+    resp.header("Content-Type", "application/json");
+    //req.header("Content-Type", "application/json");
+    console.log("ADD");
+   console.log(req.body);
+    //console.log(req.headers);
 
-    pool.query("SELECT * FROM " + table, (err, result) => {
+    //console.log(req);
+    const {name, details, deadline, whendo, timeneeded, category_name} = req.body;
+   pool.query('INSERT INTO '+ table + ' (name, details, deadline, whendo, timeneeded, category_name) values ($1, $2, $3, $4, $5, $6)', [name, details, deadline, whendo, timeneeded, category_name], (err, result) => {
+           if (err)
+           {
+               resp.status(400);
+               console.log(err.detail);
+           }
+           else
+           {
+               resp.status(201).json({"status": "SUCCESS"});
+               console.log("Success");
+           }
+   });
+};
 
+//Called by /api-tdl/getAllSorted?orderby=[id/whendo...]
+const taskAll = (req, resp) => {
+    resp.header("Access-Control-Allow-Origin", "*");
+    const {orderby} = req.query;
+    console.log("[GET ALL TASKS] sorted by :");
+    console.log(orderby);
+
+    pool.query("SELECT * FROM " + table + " ORDER BY "+orderby,(err, result) => {
         if (err){
-            resp.status(200).json({"status": "FAILURE"});
+            resp.status(400).json({"status": "FAILURE"});
             console.log(err);
+            console.log("[QUERY-STATE]: FAILURE");
         }
       else
-          resp.status(200).json(result.rows);
+        {
+            resp.status(200).json(result.rows);
+            console.log("[QUERY-STATE]: SUCCESS");
+        }
   })
 };
-
-const changeCheck = (req, resp) =>
+const update = (req, resp) =>
 {
     resp.header("Access-Control-Allow-Origin", "*");
-
     console.log("Change check");
-
-    const {content, isdone} = req.query;
-    pool.query("UPDATE " + table + " SET isdone = $1 WHERE content = $2", [isdone, content], (err, res) => {
+    const {name, details, deadline, whendo, timeneeded, category_name, id} = req.body;
+    pool.query("UPDATE " + table + " SET name = $1, details = $2, deadline = $3, whendo = $4, timeneeded = $5, category_name = $6 WHERE id = $7", [name, details, deadline, whendo, timeneeded, category_name, id], (err, res) => {
         if (err)
         {
-            resp.status(200).json({'status': 'FAILURE'});
+            resp.status(400).json({'status': 'FAILURE'});
             console.log(err);
         }
         else
@@ -61,11 +73,11 @@ const deleteSingle = (req, resp) => {
     console.log("deleting there");
     resp.header("Access-Control-Allow-Origin", "*");
 
-    const {content, isdone} = req.query;
-    pool.query("DELETE from " + table + " where content = $1 AND isdone = $2", [content, isdone], (err, res) => {
+    const {id} = req.body;
+    pool.query("DELETE from " + table + " where id = $1", [id], (err, res) => {
         if (err)
         {
-            resp.status(200).json({'status': 'FAILURE'});
+            resp.status(400).json({'status': 'FAILURE'});
             console.log(err);
         }
         else
@@ -75,6 +87,6 @@ const deleteSingle = (req, resp) => {
 module.exports = {
     add,
     taskAll,
-    changeCheck,
+    update,
     deleteSingle,
 };
