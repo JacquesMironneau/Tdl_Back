@@ -1,11 +1,27 @@
 const Pool = require("pg").Pool;
-const pool = new Pool({
+const mysql = require('mysql');
+const pool = mysql.createConnection({
+    host: 'gigondas',
+    user: 'mironnej',
+    password: 'mironnej',
+    database: 'mironnej'
+});
+
+pool.connect();
+const poola = new Pool({
     user: "admin",
     host: "crabrave.ddns.net",
     database: "incredibledb",
     password: "admin",
     port: 5432,
 });
+const poolb = new Pool({
+    user: "mironnej",
+    host: "gigondas",
+    database: "mironnej",
+    password: "mironnej",
+    port: 5432,
+})
 
 const table = 'tdl_task';
 
@@ -36,10 +52,11 @@ const add = (req, resp) => {
 //Called by /api-tdl/getAllSorted?orderby=[id/whendo...]
 const taskAll = (req, resp) => {
     resp.header("Access-Control-Allow-Origin", "*");
-    const {orderby} = req.query;
+    let {orderby} = req.query;
     console.log("[GET ALL TASKS] sorted by :");
     console.log(orderby);
 
+    orderby = 'id';
     pool.query("SELECT * FROM " + table + " ORDER BY "+orderby,(err, result) => {
         if (err){
             resp.status(400).json({"status": "FAILURE"});
@@ -49,6 +66,7 @@ const taskAll = (req, resp) => {
       else
         {
             resp.status(200).json(result.rows);
+            console.log(result.rows);
             console.log("[QUERY-STATE]: SUCCESS");
         }
   })
