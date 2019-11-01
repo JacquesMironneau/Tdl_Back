@@ -1,27 +1,20 @@
 const Pool = require("pg").Pool;
-const mysql = require('mysql');
-const pool = mysql.createConnection({
+//const mysql = require('mysql');
+/*const pool = mysql.createConnection({
     host: 'gigondas',
     user: 'mironnej',
     password: 'mironnej',
     database: 'mironnej'
 });
 
-pool.connect();
-const poola = new Pool({
+pool.connect();*/
+const pool = new Pool({
     user: "admin",
-    host: "crabrave.ddns.net",
+    host: "discovermyprojects.ddns.net",
     database: "incredibledb",
     password: "admin",
     port: 5432,
 });
-const poolb = new Pool({
-    user: "mironnej",
-    host: "gigondas",
-    database: "mironnej",
-    password: "mironnej",
-    port: 5432,
-})
 
 const table = 'tdl_task';
 
